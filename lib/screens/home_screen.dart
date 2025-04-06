@@ -15,11 +15,16 @@ class HomeScreen extends StatelessWidget {
 
     return Scaffold(
       backgroundColor: const Color(0xFFF5F5F5),
-      appBar: AppBar(
-        title: const Text('Ma Todo2'),
-        backgroundColor: theme.primaryColor,
-        foregroundColor: Colors.white,
-        elevation: 4,
+      appBar: PreferredSize(
+        preferredSize: const Size.fromHeight(
+          50,
+        ), // Réduit la taille de l'AppBar
+        child: AppBar(
+          title: const Text('Ma Todo2'),
+          backgroundColor: theme.primaryColor,
+          foregroundColor: Colors.white,
+          elevation: 4,
+        ),
       ),
       body: BlocBuilder<TodoBloc, TodoState>(
         builder: (context, state) {
@@ -31,47 +36,53 @@ class HomeScreen extends StatelessWidget {
                 separatorBuilder: (_, __) => const SizedBox(height: 10),
                 itemBuilder: (context, index) {
                   final todo = state.todos[index];
-                  return Container(
-                    decoration: BoxDecoration(
-                      color: Colors.white,
-                      borderRadius: BorderRadius.circular(12),
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.grey.shade300,
-                          blurRadius: 6,
-                          offset: const Offset(0, 3),
+                  return Dismissible(
+                    key: Key(
+                      todo.id.toString(),
+                    ), // Utilise l'ID de la tâche pour un identifiant unique
+                    direction:
+                        DismissDirection
+                            .startToEnd, // Change ici pour swipe de gauche à droite
+                    onDismissed: (_) {
+                      // Lorsque l'élément est supprimé
+                      context.read<TodoBloc>().add(RemoveTodo(todo));
+                    },
+                    child: Container(
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        borderRadius: BorderRadius.circular(12),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.grey.shade300,
+                            blurRadius: 6,
+                            offset: const Offset(0, 3),
+                          ),
+                        ],
+                      ),
+                      child: ListTile(
+                        contentPadding: const EdgeInsets.symmetric(
+                          horizontal: 16,
+                          vertical: 8,
                         ),
-                      ],
-                    ),
-                    child: ListTile(
-                      contentPadding: const EdgeInsets.symmetric(
-                        horizontal: 16,
-                        vertical: 8,
-                      ),
-                      leading: Checkbox(
-                        value: todo.isDone,
-                        onChanged: (_) {
-                          context.read<TodoBloc>().add(ToggleTodo(todo));
-                        },
-                      ),
-                      title: Text(
-                        todo.description,
-                        style: TextStyle(
-                          fontSize: 16,
-                          decoration:
-                              todo.isDone ? TextDecoration.lineThrough : null,
-                          color: todo.isDone ? Colors.grey : Colors.black87,
+                        leading: Checkbox(
+                          value: todo.isDone,
+                          onChanged: (_) {
+                            context.read<TodoBloc>().add(ToggleTodo(todo));
+                          },
                         ),
-                      ),
-                      subtitle: Text(
-                        _formatDate(todo.date),
-                        style: const TextStyle(fontSize: 12),
-                      ),
-                      trailing: IconButton(
-                        icon: const Icon(Icons.delete_outline),
-                        onPressed: () {
-                          context.read<TodoBloc>().add(RemoveTodo(todo));
-                        },
+                        title: Text(
+                          todo.description,
+                          style: TextStyle(
+                            fontSize: 16,
+                            decoration:
+                                todo.isDone ? TextDecoration.lineThrough : null,
+                            color: todo.isDone ? Colors.grey : Colors.black87,
+                          ),
+                        ),
+                        subtitle: Text(
+                          _formatDate(todo.date),
+                          style: const TextStyle(fontSize: 12),
+                        ),
                       ),
                     ),
                   );

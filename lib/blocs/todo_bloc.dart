@@ -6,7 +6,7 @@ import 'package:daily_todo_app/services/database_helper.dart'; // Assurez-vous q
 class TodoBloc extends Bloc<TodoEvent, TodoState> {
   final DatabaseHelper _databaseHelper = DatabaseHelper.instance;
 
-  TodoBloc() : super(TodoState(todos: [])) {
+  TodoBloc() : super(TodoState(todos: {})) {
     // Charger les tâches depuis la base de données au démarrage
     on<LoadTodos>((event, emit) async {
       try {
@@ -25,6 +25,7 @@ class TodoBloc extends Bloc<TodoEvent, TodoState> {
 
         // Récupérer toutes les tâches mises à jour
         final todos = await _databaseHelper.getAllTodos();
+        // Trier par date
         emit(TodoState(todos: todos));
       } catch (e) {
         emit(TodoErrorState(error: 'Erreur lors de l\'ajout de la tâche'));

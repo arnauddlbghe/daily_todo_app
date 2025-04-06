@@ -57,16 +57,38 @@ class DatabaseHelper {
     return await db.insert(table, todo.toMap());
   }
 
-  // Récupérer toutes les tâches
-  Future<List<Todo>> getAllTodos() async {
+  Future<Map<String, List<Todo>>> getAllTodos() async {
     Database db = await database;
     var result = await db.query(table);
+
     List<Todo> todos =
         result.isNotEmpty
             ? result.map((todo) => Todo.fromMap(todo)).toList()
             : [];
-    todos.sort((a, b) => b.date.compareTo(a.date));
-    return todos;
+
+    // Grouper les todos par date
+    Map<String, List<Todo>> groupedTodos = {};
+
+    for (var todo in todos) {
+      String date = todo.date.toString().substring(
+        0,
+        10,
+      ); // Assurez-vous que `date` est sous forme de String (par ex. "YYYY-MM-DD")
+
+      if (!groupedTodos.containsKey(date)) {
+        groupedTodos[date] = [];
+      }
+      groupedTodos[date]!.add(todo);
+    }
+
+    // Optionnel: trier les todos de chaque jour par date (ou un autre critère)
+    groupedTodos.forEach((key, value) {
+      value.sort(
+        (a, b) => b.date.compareTo(a.date),
+      ); // Tri décroissant selon la date
+    });
+
+    return groupedTodos;
   }
 
   // Mettre à jour une tâche

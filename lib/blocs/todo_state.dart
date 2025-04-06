@@ -1,11 +1,12 @@
-import '../models/todo.dart';
+import 'package:daily_todo_app/models/todo.dart';
 
 class TodoState {
   final List<Todo> todos;
 
   TodoState({required this.todos});
+}
 
-  TodoState copyWith({List<Todo>? todos}) {
-    return TodoState(todos: todos ?? this.todos);
-  }
+class TodoErrorState extends TodoState {
+  final String error;
+  TodoErrorState({required this.error}) : super(todos: []);
 }

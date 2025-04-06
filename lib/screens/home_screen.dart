@@ -3,19 +3,20 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import '../blocs/todo_bloc.dart';
 import '../blocs/todo_event.dart';
 import '../blocs/todo_state.dart';
-import '../models/todo.dart';
+import '../components/add_todo_sheet.dart';
 
 class HomeScreen extends StatelessWidget {
   const HomeScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
+    context.read<TodoBloc>().add(LoadTodos());
     final theme = Theme.of(context);
 
     return Scaffold(
       backgroundColor: const Color(0xFFF5F5F5),
       appBar: AppBar(
-        title: const Text('Ma Todo'),
+        title: const Text('Ma Todo2'),
         backgroundColor: theme.primaryColor,
         foregroundColor: Colors.white,
         elevation: 4,
@@ -89,8 +90,7 @@ class HomeScreen extends StatelessWidget {
   }
 
   void _showAddTodoBottomSheet(BuildContext context) {
-    final parentContext = context; // 👈 Contexte de l'écran principal
-    final TextEditingController _controller = TextEditingController();
+    final parentContext = context;
 
     showModalBottomSheet(
       context: context,
@@ -98,71 +98,7 @@ class HomeScreen extends StatelessWidget {
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
       ),
-      builder: (context) {
-        return Padding(
-          padding: EdgeInsets.only(
-            left: 16,
-            right: 16,
-            bottom: MediaQuery.of(context).viewInsets.bottom + 20,
-            top: 20,
-          ),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              const Text(
-                'Nouvelle tâche',
-                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-              ),
-              const SizedBox(height: 16),
-              TextField(
-                controller: _controller,
-                autofocus: true,
-                decoration: InputDecoration(
-                  hintText: 'Description',
-                  filled: true,
-                  fillColor: Colors.white,
-                  contentPadding: const EdgeInsets.symmetric(
-                    horizontal: 16,
-                    vertical: 12,
-                  ),
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(12),
-                    borderSide: BorderSide.none,
-                  ),
-                ),
-              ),
-              const SizedBox(height: 16),
-              ElevatedButton.icon(
-                icon: const Icon(Icons.check),
-                label: const Text('Ajouter'),
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Theme.of(context).primaryColor,
-                  foregroundColor: Colors.white,
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 24,
-                    vertical: 14,
-                  ),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                ),
-                onPressed: () {
-                  final description = _controller.text.trim();
-                  if (description.isNotEmpty) {
-                    parentContext.read<TodoBloc>().add(
-                      // 👈 Utilise le contexte parent ici
-                      AddTodo(
-                        Todo(description: description, date: DateTime.now()),
-                      ),
-                    );
-                    Navigator.pop(context);
-                  }
-                },
-              ),
-            ],
-          ),
-        );
-      },
+      builder: (context) => AddTodoSheet(parentContext: parentContext),
     );
   }
 

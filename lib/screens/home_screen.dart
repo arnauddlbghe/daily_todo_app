@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:intl/intl.dart';
 import '../blocs/todo_bloc.dart';
 import '../blocs/todo_event.dart';
 import '../blocs/todo_state.dart';
@@ -10,100 +11,90 @@ class HomeScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    context.read<TodoBloc>().add(LoadTodos());
-    final theme = Theme.of(context);
+    context.read<TodoBloc>().add(
+      LoadTodos(),
+    ); // Charger les données dès l'ouverture
 
     return Scaffold(
-      backgroundColor: Colors.black,
+      backgroundColor: Colors.white,
       appBar: PreferredSize(
-        preferredSize: const Size.fromHeight(
-          50,
-        ), // Réduire la taille de l'AppBar
+        preferredSize: const Size.fromHeight(60),
         child: AppBar(
-          title: Row(
+          backgroundColor: Colors.white,
+          elevation: 0,
+          title: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Icon(
-                Icons
-                    .check_circle_outline, // Ajoutez une icône si vous le souhaitez
-                color: Colors.white,
-                size: 28,
-              ),
-              const SizedBox(width: 10),
               const Text(
-                'Ma Todo2',
+                'Hello,',
                 style: TextStyle(
+                  fontSize: 24,
                   fontWeight: FontWeight.bold,
-                  fontSize: 22,
-                  letterSpacing:
-                      1.2, // Espacement des lettres pour plus de style
-                  color: Colors.white,
-                  shadows: [
-                    Shadow(
-                      offset: Offset(1.5, 1.5),
-                      blurRadius: 3,
-                      color: Colors.black54,
-                    ),
-                  ], // Ombre légère pour un effet plus moderne
+                  color: Colors.black,
                 ),
+              ),
+              BlocBuilder<TodoBloc, TodoState>(
+                builder: (context, state) {
+                  final activeTasks =
+                      state.todos.values
+                          .expand((e) => e)
+                          .where((todo) => !todo.isDone)
+                          .length;
+                  return Text(
+                    '$activeTasks tâches actives',
+                    style: const TextStyle(fontSize: 16, color: Colors.grey),
+                  );
+                },
               ),
             ],
           ),
-          backgroundColor:
-              Colors.transparent, // Fond transparent pour le dégradé
-          flexibleSpace: Container(
-            decoration: BoxDecoration(
-              gradient: LinearGradient(
-                colors: [Colors.purpleAccent, Colors.blue], // Dégradé élégant
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
-              ),
-              borderRadius: const BorderRadius.only(
-                bottomLeft: Radius.circular(25),
-                bottomRight: Radius.circular(25),
-              ),
-            ),
-          ),
-          elevation: 4, // Ombre légère sous l'AppBar
         ),
       ),
       body: BlocBuilder<TodoBloc, TodoState>(
         builder: (context, state) {
-          // Vérifier si la Map est vide
           if (state.todos.isEmpty) {
             return const Center(
               child: Text(
                 "Aucune tâche pour l’instant 😊",
-                style: TextStyle(color: Colors.white),
+                style: TextStyle(color: Colors.black),
               ),
             );
           }
           return ListView(
-            padding: const EdgeInsets.all(16),
+            padding: const EdgeInsets.only(
+              top: 0,
+              left: 16,
+              right: 16,
+              bottom: 16,
+            ),
             children:
                 state.todos.keys.map((date) {
                   final todos = state.todos[date]!;
+                  final formattedDate = DateFormat(
+                    'dd/MM/yyyy',
+                  ).format(DateTime.parse(date));
+
                   return Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      // Titre (la date ou autre critère)
                       Padding(
-                        padding: const EdgeInsets.only(top: 20, bottom: 10),
+                        padding: const EdgeInsets.only(top: 20, bottom: 8),
                         child: Text(
-                          date, // La date ou le titre de la catégorie
+                          formattedDate,
                           style: const TextStyle(
-                            fontSize: 18,
+                            fontSize: 16,
                             fontWeight: FontWeight.bold,
-                            color: Colors.white,
+                            color: Colors.black,
                           ),
                         ),
                       ),
-                      // Liste des tâches pour cette date
                       ListView.separated(
-                        shrinkWrap:
-                            true, // Pour que la ListView ne prenne pas trop de place
+                        shrinkWrap: true,
                         physics: const NeverScrollableScrollPhysics(),
                         itemCount: todos.length,
-                        separatorBuilder: (_, __) => const SizedBox(height: 12),
+                        separatorBuilder:
+                            (_, __) =>
+                                const SizedBox(height: 10), // espace réduit
                         itemBuilder: (context, index) {
                           final todo = todos[index];
                           return Dismissible(
@@ -115,6 +106,7 @@ class HomeScreen extends StatelessWidget {
                               padding: const EdgeInsets.symmetric(
                                 horizontal: 20,
                               ),
+
                               child: const Icon(
                                 Icons.delete_forever,
                                 color: Colors.white,
@@ -125,45 +117,38 @@ class HomeScreen extends StatelessWidget {
                             },
                             child: Container(
                               decoration: BoxDecoration(
-                                color: Colors.grey.shade900,
-                                borderRadius: BorderRadius.circular(15),
+                                color:
+                                    todo.isDone
+                                        ? Color.fromARGB(255, 179, 237, 200)
+                                        : Color.fromARGB(255, 244, 241, 241),
+                                borderRadius: BorderRadius.circular(6),
                               ),
                               child: ListTile(
-                                contentPadding: const EdgeInsets.symmetric(
-                                  horizontal: 18,
-                                  vertical: 6,
+                                onTap: () {
+                                  context.read<TodoBloc>().add(
+                                    ToggleTodo(todo),
+                                  );
+                                },
+                                contentPadding: const EdgeInsets.only(
+                                  left: 16,
+                                  right: 16,
                                 ),
                                 title: Row(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  crossAxisAlignment: CrossAxisAlignment.center,
                                   children: [
                                     Expanded(
                                       child: Text(
                                         todo.description,
-                                        style: const TextStyle(
+                                        style: TextStyle(
                                           fontSize: 16,
-                                          fontWeight: FontWeight.bold,
-                                          color: Colors.white,
+                                          fontWeight: FontWeight.w500,
+                                          color: Colors.black,
+                                          decoration:
+                                              todo.isDone
+                                                  ? TextDecoration.lineThrough
+                                                  : TextDecoration.none,
                                         ),
-                                        maxLines: 3,
-                                        overflow: TextOverflow.ellipsis,
                                       ),
-                                    ),
-                                    IconButton(
-                                      icon: Icon(
-                                        todo.isDone
-                                            ? Icons.check_circle
-                                            : Icons.radio_button_unchecked,
-                                        color:
-                                            todo.isDone
-                                                ? Colors.green
-                                                : Colors.white,
-                                        size: 30,
-                                      ),
-                                      onPressed: () {
-                                        context.read<TodoBloc>().add(
-                                          ToggleTodo(todo),
-                                        );
-                                      },
                                     ),
                                   ],
                                 ),
@@ -180,8 +165,8 @@ class HomeScreen extends StatelessWidget {
       ),
       floatingActionButton: FloatingActionButton(
         onPressed: () => _showAddTodoBottomSheet(context),
-        backgroundColor: theme.primaryColor,
-        child: const Icon(Icons.add, size: 30),
+        backgroundColor: Colors.black,
+        child: const Icon(Icons.add, size: 28, color: Colors.white),
       ),
     );
   }
@@ -193,14 +178,8 @@ class HomeScreen extends StatelessWidget {
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(30)),
       ),
+      backgroundColor: Colors.white,
       builder: (context) => AddTodoSheet(parentContext: context),
     );
   }
-
-  String _formatDate(DateTime date) {
-    final d = date.toLocal();
-    return "${_addZero(d.day)}/${_addZero(d.month)}/${d.year}";
-  }
-
-  String _addZero(int n) => n < 10 ? '0$n' : '$n';
 }

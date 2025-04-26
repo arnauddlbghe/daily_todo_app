@@ -59,7 +59,7 @@ class DatabaseHelper {
 
   Future<Map<String, List<Todo>>> getAllTodos() async {
     Database db = await database;
-    var result = await db.query(table);
+    var result = await db.query(table, orderBy: 'date DESC');
 
     List<Todo> todos =
         result.isNotEmpty
